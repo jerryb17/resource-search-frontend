@@ -191,12 +191,13 @@ class ApiService {
     topK: number = 5,
     taskId?: number,
     taskTitle?: string,
-    useAi: boolean = false
+    useAi: boolean = true
   ): Promise<{
     success: boolean;
     task: string;
     count: number;
     recommendations: Resource[];
+
     task_analysis?: any;
     analysis_summary?: string;
     ai_powered?: boolean;
