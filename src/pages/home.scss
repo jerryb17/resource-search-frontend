@@ -1,0 +1,540 @@
+@use "../styles/mixins" as *;
+
+.home-container {
+  padding: $spacing-2xl $spacing-md;
+  min-height: calc(100vh - 120px);
+
+  .search-section {
+    padding: $spacing-2xl;
+    margin-bottom: $spacing-2xl;
+    border-radius: $radius-xl;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+
+    .search-input-container {
+      position: relative;
+
+      .search-icon {
+        color: $text-secondary;
+      }
+
+      .search-input {
+        .MuiOutlinedInput-root {
+          border-radius: $radius-lg;
+
+          &:hover {
+            border-color: $primary;
+          }
+
+          &.Mui-focused {
+            border-color: $primary;
+          }
+        }
+      }
+
+      .voice-btn {
+        background: $primary;
+        color: $text-white;
+        width: 48px;
+        height: 48px;
+        border-radius: $radius-md;
+        transition: all $transition-base;
+
+        &:hover {
+          background: $primary-dark;
+          transform: scale(1.05);
+        }
+
+        &.listening {
+          background: $danger;
+          animation: pulse-voice 1.5s ease-in-out infinite;
+        }
+      }
+    }
+
+    .listening-alert {
+      @include pulse-animation;
+    }
+
+    .action-buttons {
+      .btn-primary {
+        @include button-primary;
+        min-width: 250px;
+      }
+
+      .btn-secondary {
+        @include button-secondary;
+        min-width: 150px;
+        background: transparent;
+        color: $primary;
+        border: 2px solid $primary;
+
+        &:hover {
+          background: rgba($primary, 0.1);
+        }
+      }
+
+      @include responsive(sm) {
+        flex-direction: column;
+        width: 100%;
+
+        button {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .results-section {
+    .loading-container {
+      @include flex-column;
+      @include flex-center;
+      padding: $spacing-2xl;
+      gap: $spacing-lg;
+      border-radius: $radius-xl;
+    }
+
+    .results-title {
+      color: $text-white;
+      text-align: center;
+      margin-bottom: $spacing-2xl;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .no-match-alert {
+      @include flex-column;
+      @include flex-center;
+      padding: $spacing-2xl;
+      gap: $spacing-md;
+      border-radius: $radius-xl;
+      background: white;
+      border: 2px solid rgba($primary, 0.1);
+      margin-bottom: $spacing-2xl;
+      text-align: center;
+
+      .alert-icon {
+        font-size: 64px;
+        color: $secondary;
+      }
+
+      .recommendation-factors {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $spacing-sm;
+        justify-content: center;
+        margin-top: $spacing-md;
+
+        .factor-chip {
+          background: rgba($primary, 0.1);
+          color: $primary;
+          font-weight: 600;
+          border: 1px solid rgba($primary, 0.2);
+        }
+      }
+    }
+
+    .resources-grid {
+      margin-bottom: $spacing-2xl;
+    }
+
+    .resource-card {
+      @include card;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .card-actions {
+        display: flex;
+        gap: $spacing-sm;
+        padding: $spacing-md;
+        margin-top: auto;
+
+        .view-profile-btn {
+          flex: 1;
+          border: 2px solid $primary;
+          color: $primary;
+          font-weight: 600;
+
+          &:hover {
+            background: rgba($primary, 0.08);
+            border-color: $primary-dark;
+          }
+        }
+
+        .message-btn {
+          flex: 1;
+          background: $gradient-primary;
+          font-weight: 600;
+
+          &:hover {
+            background: $primary-dark;
+          }
+        }
+      }
+    }
+
+    .old-resource-card {
+      @include card;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255, 255, 255, 0.98);
+
+      .resource-avatar {
+        width: 64px;
+        height: 64px;
+        background: $gradient-primary;
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+
+      .resource-name {
+        font-weight: 700;
+        color: $text-primary;
+      }
+
+      .resource-title {
+        color: $text-secondary;
+      }
+
+      .resource-dept {
+        color: $text-light;
+      }
+
+      .match-score {
+        text-align: center;
+
+        .score-value {
+          color: $primary;
+          font-weight: 700;
+        }
+
+        .score-label {
+          color: $text-secondary;
+          font-weight: 600;
+          font-size: 0.625rem;
+        }
+      }
+
+      .divider {
+        margin: $spacing-md 0;
+      }
+
+      .label {
+        color: $text-secondary;
+        font-weight: 500;
+      }
+
+      .value {
+        color: $text-primary;
+        font-weight: 600;
+      }
+
+      .workload-container {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        flex: 1;
+        max-width: 150px;
+
+        .workload-bar {
+          flex: 1;
+          height: 6px;
+          border-radius: $radius-full;
+        }
+
+        .workload-value {
+          font-weight: 600;
+          min-width: 40px;
+          text-align: right;
+        }
+      }
+
+      .status-chip {
+        font-weight: 700;
+        text-transform: uppercase;
+
+        &.available {
+          background: rgba($success, 0.2);
+          color: $success;
+        }
+
+        &.busy {
+          background: rgba($danger, 0.2);
+          color: $danger;
+        }
+      }
+
+      .section-title {
+        display: block;
+        color: $text-secondary;
+        font-weight: 700;
+        margin-bottom: $spacing-sm;
+        font-size: 0.75rem;
+      }
+
+      .skills-container {
+        margin-top: $spacing-xs;
+      }
+
+      .skill-chip {
+        background: rgba($primary, 0.1);
+        color: $primary;
+        font-weight: 600;
+        border-radius: $radius-sm;
+        transition: all $transition-base;
+
+        &:hover {
+          background: $primary;
+          color: $text-white;
+        }
+      }
+
+      .more-chip {
+        background: $secondary;
+        color: $text-white;
+        font-weight: 700;
+      }
+
+      .recommendation-alert {
+        margin-top: $spacing-md;
+        border-radius: $radius-md;
+      }
+
+      .card-actions {
+        padding: $spacing-md;
+        margin-top: auto;
+      }
+
+      .message-btn {
+        @include button-primary;
+        background: $gradient-secondary;
+
+        &:hover {
+          background: $secondary-dark;
+        }
+      }
+    }
+
+    .empty-state {
+      @include flex-column;
+      @include flex-center;
+      padding: calc($spacing-2xl * 2);
+      gap: $spacing-lg;
+      border-radius: $radius-xl;
+      text-align: center;
+
+      .empty-icon {
+        font-size: 80px;
+        color: $text-light;
+      }
+
+      h5 {
+        color: $text-primary;
+      }
+
+      p {
+        color: $text-secondary;
+      }
+
+      strong {
+        color: $primary;
+      }
+    }
+  }
+}
+
+@keyframes pulse-voice {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba($danger, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba($danger, 0);
+  }
+}
+
+// Profile Modal Styles
+.profile-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+
+  .modal-content {
+    background: $bg-primary;
+    border-radius: $radius-xl;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: $shadow-xl;
+    position: relative;
+
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: $spacing-2xl;
+      background: $gradient-primary;
+      color: $text-white;
+      border-radius: $radius-xl $radius-xl 0 0;
+
+      .modal-avatar {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+        background: rgba(255, 255, 255, 0.2);
+        border: 3px solid $text-white;
+      }
+
+      .modal-name {
+        color: $text-white;
+        font-weight: 700;
+        margin-bottom: $spacing-xs;
+      }
+
+      .modal-title {
+        color: rgba(255, 255, 255, 0.95);
+        font-weight: 500;
+        margin-bottom: $spacing-xs;
+      }
+
+      .modal-dept {
+        display: flex;
+        align-items: center;
+        gap: $spacing-xs;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .close-btn {
+        color: $text-white;
+        background: rgba(255, 255, 255, 0.1);
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      }
+    }
+
+    .modal-body {
+      padding: $spacing-2xl;
+
+      .modal-section {
+        margin-bottom: $spacing-2xl;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        .section-title {
+          color: $primary;
+          font-weight: 700;
+          margin-bottom: $spacing-md;
+          display: flex;
+          align-items: center;
+          gap: $spacing-sm;
+        }
+
+        .match-score-large {
+          padding: $spacing-xl;
+          background: $gradient-primary;
+          border-radius: $radius-lg;
+          color: $text-white;
+
+          .score-value {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: $spacing-sm;
+          }
+        }
+
+        .skills-grid {
+          .skill-chip-modal {
+            font-weight: 600;
+            border-width: 2px;
+            transition: all $transition-base;
+
+            &:hover {
+              background: rgba($primary, 0.1);
+              transform: translateY(-2px);
+              box-shadow: $shadow-md;
+            }
+          }
+        }
+      }
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: $spacing-md;
+      padding: $spacing-xl;
+      background: $bg-secondary;
+      border-radius: 0 0 $radius-xl $radius-xl;
+
+      button {
+        min-width: 150px;
+      }
+    }
+
+    @include responsive(md) {
+      max-height: 95vh;
+
+      .modal-header {
+        padding: $spacing-xl;
+
+        .modal-avatar {
+          width: 60px;
+          height: 60px;
+          font-size: 1.5rem;
+        }
+
+        .modal-name {
+          font-size: 1.5rem;
+        }
+
+        .modal-title {
+          font-size: 1rem;
+        }
+      }
+
+      .modal-body {
+        padding: $spacing-xl;
+
+        .modal-section {
+          .match-score-large {
+            padding: $spacing-lg;
+
+            .score-value {
+              font-size: 3rem;
+            }
+          }
+        }
+      }
+
+      .modal-footer {
+        padding: $spacing-lg;
+        flex-direction: column;
+
+        button {
+          width: 100%;
+        }
+      }
+    }
+
+    @include responsive(sm) {
+      .modal-header {
+        flex-direction: column;
+        gap: $spacing-md;
+
+        .close-btn {
+          position: absolute;
+          top: $spacing-md;
+          right: $spacing-md;
+        }
+      }
+    }
+  }
+}

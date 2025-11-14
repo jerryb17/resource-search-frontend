@@ -1,0 +1,235 @@
+@use '../styles/mixins' as *;
+
+.dashboard-container {
+  padding: $spacing-2xl $spacing-md;
+  min-height: calc(100vh - 120px);
+
+  .loading-container {
+    @include flex-column;
+    @include flex-center;
+    min-height: 400px;
+    gap: $spacing-lg;
+  }
+
+  .dashboard-title {
+    color: $primary;
+    margin-bottom: $spacing-2xl;
+    text-align: center;
+  }
+
+  .stats-grid {
+    margin-bottom: $spacing-2xl;
+  }
+
+  .stat-card {
+    @include card;
+    
+    .stat-content {
+      @include flex-between;
+      align-items: center;
+
+      .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: $radius-md;
+        @include flex-center;
+        
+        &.primary {
+          background: $gradient-primary;
+          color: $text-white;
+        }
+        
+        &.success {
+          background: $gradient-success;
+          color: $text-white;
+        }
+        
+        &.warning {
+          background: $gradient-warning;
+          color: $text-white;
+        }
+        
+        &.secondary {
+          background: $gradient-secondary;
+          color: $text-white;
+        }
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: $primary;
+        
+        &.success {
+          color: $success;
+        }
+        
+        &.warning {
+          color: $warning;
+        }
+        
+        &.secondary {
+          color: $secondary;
+        }
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: $text-secondary;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .charts-grid {
+    margin-bottom: $spacing-2xl;
+  }
+
+  .chart-card {
+    padding: $spacing-lg;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-md;
+
+    .chart-title {
+      color: $primary;
+      font-weight: 700;
+      margin-bottom: $spacing-md;
+      text-align: center;
+    }
+  }
+
+  .tasks-table {
+    padding: $spacing-lg;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-md;
+
+    .table-title {
+      color: $primary;
+      font-weight: 700;
+      margin-bottom: $spacing-lg;
+      padding-bottom: $spacing-md;
+      border-bottom: 2px solid $border-color;
+    }
+
+    .tasks-list {
+      @include flex-column;
+      gap: $spacing-md;
+    }
+
+    .task-item {
+      @include flex-between;
+      padding: $spacing-md;
+      background: $bg-secondary;
+      border-radius: $radius-md;
+      border-left: 4px solid $primary;
+      transition: all $transition-base;
+
+      &:hover {
+        background: $bg-secondary-hover;
+        box-shadow: $shadow-sm;
+      }
+
+      .task-info {
+        flex: 1;
+
+        .task-title {
+          font-weight: 700;
+          color: $text-primary;
+          margin-bottom: $spacing-xs;
+        }
+
+        .task-description {
+          color: $text-secondary;
+          margin-bottom: $spacing-sm;
+        }
+
+        .task-meta {
+          display: flex;
+          gap: $spacing-sm;
+
+          .priority-badge {
+            padding: $spacing-xs $spacing-sm;
+            border-radius: $radius-sm;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+
+            &.critical {
+              background: rgba($danger, 0.2);
+              color: $danger;
+            }
+
+            &.high {
+              background: rgba($warning, 0.2);
+              color: $warning;
+            }
+
+            &.medium {
+              background: rgba($info, 0.2);
+              color: $info;
+            }
+
+            &.low {
+              background: rgba($text-secondary, 0.2);
+              color: $text-secondary;
+            }
+          }
+
+          .hours-badge {
+            padding: $spacing-xs $spacing-sm;
+            border-radius: $radius-sm;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: rgba($primary, 0.1);
+            color: $primary;
+          }
+        }
+      }
+
+      .assigned-to {
+        text-align: right;
+        padding-left: $spacing-lg;
+
+        .resource-name {
+          font-weight: 700;
+          color: $primary;
+        }
+
+        .resource-dept {
+          color: $text-secondary;
+        }
+      }
+    }
+
+    .empty-state {
+      @include flex-column;
+      @include flex-center;
+      padding: $spacing-2xl;
+      gap: $spacing-md;
+
+      .empty-icon {
+        font-size: 64px;
+        color: $text-light;
+      }
+
+      p {
+        color: $text-secondary;
+      }
+    }
+  }
+
+  @include responsive(md) {
+    .task-item {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .assigned-to {
+        text-align: left;
+        padding-left: 0;
+        padding-top: $spacing-md;
+        border-top: 1px solid $border-color;
+        width: 100%;
+      }
+    }
+  }
+}
