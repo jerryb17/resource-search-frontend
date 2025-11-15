@@ -448,10 +448,23 @@
 
     .modal-body {
       padding: $spacing-2xl;
-
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-xl;
       .modal-section {
-        margin-bottom: $spacing-2xl;
+        margin-bottom: $spacing-xl;
+        .assign-work-section {
+          margin-top: $spacing-lg;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: $spacing-md;
+          flex-wrap: wrap;
 
+          .assign-work-text {
+            max-width: 60%;
+          }
+        }
         &:last-child {
           margin-bottom: 0;
         }
@@ -567,19 +580,6 @@
 
             .score-value {
               font-size: 3rem;
-            }
-          }
-
-          .assign-work-section {
-            margin-top: $spacing-lg;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: $spacing-md;
-            flex-wrap: wrap;
-
-            .assign-work-text {
-              max-width: 60%;
             }
           }
         }
