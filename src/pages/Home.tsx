@@ -52,8 +52,14 @@ export function Home() {
   const [recommendations, setRecommendations] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+  const [selectedResource, setSelectedResource] = useState<Resource | null>(
+    null
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [assignHours, setAssignHours] = useState<string>("");
+  const [assignLoading, setAssignLoading] = useState(false);
+  const [, setAssignError] = useState<string | null>(null);
+  const [, setAssignSuccess] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
 
   const initVoiceRecognition = useCallback(() => {
@@ -181,6 +187,47 @@ export function Home() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedResource(null);
+    setAssignHours("");
+    setAssignError(null);
+    setAssignSuccess(null);
+    setAssignLoading(false);
+  };
+
+  const handleAssignWorkload = async () => {
+    if (!selectedResource) return;
+    const hours = parseFloat(assignHours);
+
+    if (isNaN(hours) || hours <= 0) {
+      setAssignError("Please enter a valid number of hours greater than 0");
+      setAssignSuccess(null);
+      return;
+    }
+
+    try {
+      setAssignLoading(true);
+      setAssignError(null);
+      const response = await apiService.updateResourceWorkload(
+        selectedResource.id,
+        hours
+      );
+
+      // Update selected resource and any cards using it
+      setSelectedResource(response.resource);
+      setExactMatches((prev) =>
+        prev.map((r) => (r.id === response.resource.id ? response.resource : r))
+      );
+      setRecommendations((prev) =>
+        prev.map((r) => (r.id === response.resource.id ? response.resource : r))
+      );
+
+      setAssignSuccess(response.message || "Workload updated successfully");
+    } catch (err) {
+      console.error("Assign workload error:", err);
+      setAssignError("Failed to update workload. Please try again.");
+      setAssignSuccess(null);
+    } finally {
+      setAssignLoading(false);
+    }
   };
 
   // Helper function to render resource card
@@ -304,18 +351,21 @@ export function Home() {
               <Typography variant="caption" fontWeight={600}>
                 AI RECOMMENDATION
               </Typography>
-              <List dense disablePadding sx={{ mt: 1 }}>
-                {resource.recommendation_reason.split('•').filter(r => r.trim()).map((reason, idx) => (
-                  <ListItem key={idx} sx={{ py: 0.5, px: 0 }}>
-                    <ListItemIcon sx={{ minWidth: 32 }}>
-                      <CheckCircle fontSize="small" color="info" />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary={reason.trim()} 
-                      primaryTypographyProps={{ variant: 'body2' }}
-                    />
-                  </ListItem>
-                ))}
+              <List dense disablePadding className="recommendation-list">
+                {resource.recommendation_reason
+                  .split("•")
+                  .filter((r) => r.trim())
+                  .map((reason, idx) => (
+                    <ListItem key={idx} className="recommendation-list-item">
+                      <ListItemIcon className="recommendation-list-icon">
+                        <CheckCircle fontSize="small" color="info" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={reason.trim()}
+                        primaryTypographyProps={{ variant: "body2" }}
+                      />
+                    </ListItem>
+                  ))}
               </List>
             </Alert>
           )}
@@ -350,384 +400,426 @@ export function Home() {
       <Container maxWidth="lg" className="home-container">
         {/* Search Section */}
         <Paper elevation={3} className="search-section">
-        <Stack spacing={3}>
-          <Box className="search-input-container">
-            <TextField
-              fullWidth
-              variant="outlined"
-              placeholder='Search: "find me a React developer", "React and Python expert", "senior backend engineer"'
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-              className="search-input"
-              InputProps={{
-                startAdornment: <Search className="search-icon" />,
-                endAdornment: (
-                  <Tooltip
-                    title={
-                      isListening ? "Stop listening" : "Start voice command"
-                    }
-                  >
-                    <IconButton
-                      onClick={isListening ? stopListening : startListening}
-                      className={`voice-btn ${isListening ? "listening" : ""}`}
-                    >
-                      {isListening ? <MicOff /> : <Mic />}
-                    </IconButton>
-                  </Tooltip>
-                ),
-              }}
-            />
-          </Box>
-
-          {isListening && (
-            <Alert severity="error" icon={<Mic />} className="listening-alert">
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <CircularProgress size={16} color="inherit" />
-                <Typography fontWeight={600}>Listening... Speak now</Typography>
-              </Stack>
-            </Alert>
-          )}
-
-          {error && <Alert severity="error">{error}</Alert>}
-
-          <Stack
-            direction="row"
-            spacing={2}
-            justifyContent="center"
-            className="action-buttons"
-          >
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => handleSearch()}
-              disabled={loading}
-              startIcon={<AutoAwesome />}
-              className="btn-primary"
-            >
-              {loading ? "Searching with AI..." : "AI-Powered Search"}
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={loadAllResources}
-              disabled={loading}
-              className="btn-secondary"
-            >
-              Show All
-            </Button>
-          </Stack>
-        </Stack>
-      </Paper>
-
-      {/* Results Section */}
-      <Box className="results-section">
-        {loading ? (
-          <Paper elevation={3} className="loading-container">
-            <div className="loading-spinner" />
-            <Typography variant="h6">
-              AI is analyzing and finding the best matches...
-            </Typography>
-          </Paper>
-        ) : (
-          <>
-            {/* Exact Matches */}
-            {exactMatches.length > 0 && (
-              <Box mb={4}>
-                <Typography variant="h2" className="results-title">
-                  ✅ Perfect Matches ({exactMatches.length})
-                </Typography>
-                <Grid container spacing={3} className="resources-grid">
-                  {exactMatches.map((resource) => (
-                    <Grid item xs={12} md={6} lg={6} key={resource.id}>
-                      {renderResourceCard(resource)}
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-            )}
-
-            {/* No Exact Match Message + Recommendations */}
-            {exactMatches.length === 0 && recommendations.length > 0 && (
-              <Box>
-                <Paper elevation={3} className="no-match-alert">
-                  <AutoAwesome className="alert-icon" />
-                  <Typography variant="h5">No Exact Match Found</Typography>
-                  <Typography variant="body1">
-                    We couldn't find developers with the exact skills you
-                    requested, but here are some
-                    <strong> highly recommended alternatives</strong> based on:
-                  </Typography>
-                  <Box className="recommendation-factors">
-                    <Chip
-                      icon={<AutoAwesome />}
-                      label="Experience & Seniority"
-                      className="factor-chip"
-                    />
-                    <Chip
-                      icon={<AutoAwesome />}
-                      label="Similar Tech Stack"
-                      className="factor-chip"
-                    />
-                    <Chip
-                      icon={<AutoAwesome />}
-                      label="Low Workload"
-                      className="factor-chip"
-                    />
-                    <Chip
-                      icon={<AutoAwesome />}
-                      label="Proven Track Record"
-                      className="factor-chip"
-                    />
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" mt={2}>
-                    💡 <strong>AI Insight:</strong> These developers can quickly
-                    adapt to new technologies based on their experience and
-                    completed projects.
-                  </Typography>
-                </Paper>
-
-                <Typography variant="h2" className="results-title" mt={4}>
-                  🤖 AI-Recommended Alternatives ({recommendations.length})
-                </Typography>
-                <Grid container spacing={3} className="resources-grid">
-                  {recommendations.map((resource) => (
-                    <Grid item xs={12} md={6} lg={4} key={resource.id}>
-                      {renderResourceCard(resource)}
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-            )}
-
-            {/* No Results At All */}
-            {exactMatches.length === 0 &&
-              recommendations.length === 0 &&
-              !loading &&
-              searchQuery && (
-                <Paper elevation={3} className="empty-state">
-                  <AutoAwesome className="empty-icon" />
-                  <Typography variant="h5">No Developers Found</Typography>
-                  <Typography variant="body1">
-                    Try searching with different skills or criteria:
-                    <br />
-                    <strong>"React developer"</strong>,{" "}
-                    <strong>"Python and Django expert"</strong>, or{" "}
-                    <strong>"senior backend engineer"</strong>
-                  </Typography>
-                </Paper>
-              )}
-
-            {/* Initial Empty State */}
-            {exactMatches.length === 0 &&
-              recommendations.length === 0 &&
-              !searchQuery && (
-                <Paper elevation={3} className="empty-state">
-                  <AutoAwesome className="empty-icon" />
-                  <Typography variant="h5">
-                    AI-Powered Developer Search
-                  </Typography>
-                  <Typography variant="body1">
-                    Use natural language to find the perfect developer:
-                    <br />
-                    <strong>"Find me a React developer"</strong>
-                    <br />
-                    <strong>"React and Python expert"</strong>
-                    <br />
-                    <strong>"Senior backend engineer"</strong>
-                  </Typography>
-                </Paper>
-              )}
-          </>
-        )}
-      </Box>
-    </Container>
-
-    {/* Profile Modal */}
-    <Modal
-      open={isModalOpen}
-      onClose={handleCloseModal}
-      className="profile-modal"
-    >
-      <Box className="modal-content">
-        {selectedResource && (
-          <>
-            <Box className="modal-header">
-              <Stack direction="row" spacing={2} alignItems="center" flex={1}>
-                <Avatar className="modal-avatar">
-                  {selectedResource.name.split(' ').map((n) => n[0]).join('')}
-                </Avatar>
-                <Box>
-                  <Typography variant="h4" className="modal-name">
-                    {selectedResource.name}
-                  </Typography>
-                  <Typography variant="h6" className="modal-title">
-                    {selectedResource.title}
-                  </Typography>
-                  <Typography variant="body2" className="modal-dept">
-                    <Business fontSize="small" /> {selectedResource.department}
-                  </Typography>
-                </Box>
-              </Stack>
-              <IconButton onClick={handleCloseModal} className="close-btn">
-                <Close />
-              </IconButton>
-            </Box>
-
-            <Divider />
-
-            <Box className="modal-body">
-              {/* Match Score */}
-              {selectedResource.match_score && (
-                <Box className="modal-section">
-                  <Typography variant="h6" className="section-title">
-                    Match Score
-                  </Typography>
-                  <Box className="match-score-large">
-                    <Typography variant="h2" className="score-value">
-                      {Math.round(selectedResource.match_score * 100)}%
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Compatibility Match
-                    </Typography>
-                  </Box>
-                </Box>
-              )}
-
-              {/* Status Information */}
-              <Box className="modal-section">
-                <Typography variant="h6" className="section-title">
-                  Current Status
-                </Typography>
-                <List>
-                  <ListItem>
-                    <ListItemIcon>
-                      {selectedResource.availability === 'Available' ? (
-                        <CheckCircle color="success" />
-                      ) : (
-                        <Cancel color="error" />
-                      )}
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="Availability" 
-                      secondary={selectedResource.availability}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <Work color="primary" />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="Current Workload" 
-                      secondary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={selectedResource.current_workload}
-                            color={getWorkloadColor(selectedResource.current_workload)}
-                            sx={{ flex: 1, height: 8, borderRadius: 4 }}
-                          />
-                          <Typography variant="body2">
-                            {selectedResource.current_workload}%
-                          </Typography>
-                        </Box>
-                      }
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <CalendarToday color="primary" />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="Experience" 
-                      secondary={`${selectedResource.experience_years} years`}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <EmojiEvents color="warning" />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="Projects Completed" 
-                      secondary={selectedResource.projects_completed}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <Business color="primary" />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="Department" 
-                      secondary={selectedResource.department}
-                    />
-                  </ListItem>
-                </List>
-              </Box>
-
-              {/* All Skills */}
-              <Box className="modal-section">
-                <Typography variant="h6" className="section-title">
-                  All Skills ({selectedResource.skills.length})
-                </Typography>
-                <Stack direction="row" flexWrap="wrap" gap={1} className="skills-grid">
-                  {selectedResource.skills.map((skill, index) => (
-                    <Chip 
-                      key={index} 
-                      label={skill} 
-                      color="primary" 
-                      variant="outlined"
-                      className="skill-chip-modal"
-                    />
-                  ))}
-                </Stack>
-              </Box>
-
-              {/* AI Recommendation Reasons */}
-              {selectedResource.recommendation_reason && (
-                <Box className="modal-section">
-                  <Typography variant="h6" className="section-title">
-                    Why Recommended
-                  </Typography>
-                  <List>
-                    {selectedResource.recommendation_reason.split('•').filter(r => r.trim()).map((reason, idx) => (
-                      <ListItem key={idx}>
-                        <ListItemIcon>
-                          <CheckCircle color="success" />
-                        </ListItemIcon>
-                        <ListItemText primary={reason.trim()} />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Box>
-              )}
-            </Box>
-
-            <Divider />
-
-            <Box className="modal-footer">
-              <Button
+          <Stack spacing={3}>
+            <Box className="search-input-container">
+              <TextField
+                fullWidth
                 variant="outlined"
-                size="large"
-                onClick={handleCloseModal}
+                placeholder='Search: "find me a React developer", "React and Python expert", "senior backend engineer"'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                className="search-input"
+                InputProps={{
+                  startAdornment: <Search className="search-icon" />,
+                  endAdornment: (
+                    <Tooltip
+                      title={
+                        isListening ? "Stop listening" : "Start voice command"
+                      }
+                    >
+                      <IconButton
+                        onClick={isListening ? stopListening : startListening}
+                        className={`voice-btn ${
+                          isListening ? "listening" : ""
+                        }`}
+                      >
+                        {isListening ? <MicOff /> : <Mic />}
+                      </IconButton>
+                    </Tooltip>
+                  ),
+                }}
+              />
+            </Box>
+
+            {isListening && (
+              <Alert
+                severity="error"
+                icon={<Mic />}
+                className="listening-alert"
               >
-                Close
-              </Button>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <CircularProgress size={16} color="inherit" />
+                  <Typography fontWeight={600}>
+                    Listening... Speak now
+                  </Typography>
+                </Stack>
+              </Alert>
+            )}
+
+            {error && <Alert severity="error">{error}</Alert>}
+
+            <Stack
+              direction="row"
+              spacing={2}
+              justifyContent="center"
+              className="action-buttons"
+            >
               <Button
                 variant="contained"
                 size="large"
-                startIcon={<Message />}
-                onClick={() => {
-                  handleMessage(selectedResource);
-                  handleCloseModal();
-                }}
+                onClick={() => handleSearch()}
+                disabled={loading}
+                startIcon={<AutoAwesome />}
+                className="btn-primary"
               >
-                Send Message
+                {loading ? "Searching with AI..." : "AI-Powered Search"}
               </Button>
-            </Box>
-          </>
-        )}
-      </Box>
-    </Modal>
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={loadAllResources}
+                disabled={loading}
+                className="btn-secondary"
+              >
+                Show All
+              </Button>
+            </Stack>
+          </Stack>
+        </Paper>
+
+        {/* Results Section */}
+        <Box className="results-section">
+          {loading ? (
+            <Paper elevation={3} className="loading-container">
+              <div className="loading-spinner" />
+              <Typography variant="h6">
+                AI is analyzing and finding the best matches...
+              </Typography>
+            </Paper>
+          ) : (
+            <>
+              {/* Exact Matches */}
+              {exactMatches.length > 0 && (
+                <Box mb={4}>
+                  <Typography variant="h2" className="results-title">
+                    ✅ Perfect Matches ({exactMatches.length})
+                  </Typography>
+                  <Grid container spacing={3} className="resources-grid">
+                    {exactMatches.map((resource) => (
+                      <Grid item xs={12} md={6} lg={6} key={resource.id}>
+                        {renderResourceCard(resource)}
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+
+              {/* No Exact Match Message + Recommendations */}
+              {exactMatches.length === 0 && recommendations.length > 0 && (
+                <Box>
+                  <Paper elevation={3} className="no-match-alert">
+                    <AutoAwesome className="alert-icon" />
+                    <Typography variant="h5">No Exact Match Found</Typography>
+                    <Typography variant="body1">
+                      We couldn't find developers with the exact skills you
+                      requested, but here are some
+                      <strong> highly recommended alternatives</strong> based
+                      on:
+                    </Typography>
+                    <Box className="recommendation-factors">
+                      <Chip
+                        icon={<AutoAwesome />}
+                        label="Experience & Seniority"
+                        className="factor-chip"
+                      />
+                      <Chip
+                        icon={<AutoAwesome />}
+                        label="Similar Tech Stack"
+                        className="factor-chip"
+                      />
+                      <Chip
+                        icon={<AutoAwesome />}
+                        label="Low Workload"
+                        className="factor-chip"
+                      />
+                      <Chip
+                        icon={<AutoAwesome />}
+                        label="Proven Track Record"
+                        className="factor-chip"
+                      />
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" mt={2}>
+                      💡 <strong>AI Insight:</strong> These developers can
+                      quickly adapt to new technologies based on their
+                      experience and completed projects.
+                    </Typography>
+                  </Paper>
+
+                  <Typography variant="h2" className="results-title" mt={4}>
+                    🤖 AI-Recommended Alternatives ({recommendations.length})
+                  </Typography>
+                  <Grid container spacing={3} className="resources-grid">
+                    {recommendations.map((resource) => (
+                      <Grid item xs={12} md={6} lg={4} key={resource.id}>
+                        {renderResourceCard(resource)}
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+
+              {/* No Results At All */}
+              {exactMatches.length === 0 &&
+                recommendations.length === 0 &&
+                !loading &&
+                searchQuery && (
+                  <Paper elevation={3} className="empty-state">
+                    <AutoAwesome className="empty-icon" />
+                    <Typography variant="h5">No Developers Found</Typography>
+                    <Typography variant="body1">
+                      Try searching with different skills or criteria:
+                      <br />
+                      <strong>"React developer"</strong>,{" "}
+                      <strong>"Python and Django expert"</strong>, or{" "}
+                      <strong>"senior backend engineer"</strong>
+                    </Typography>
+                  </Paper>
+                )}
+
+              {/* Initial Empty State */}
+              {exactMatches.length === 0 &&
+                recommendations.length === 0 &&
+                !searchQuery && (
+                  <Paper elevation={3} className="empty-state">
+                    <AutoAwesome className="empty-icon" />
+                    <Typography variant="h5">
+                      AI-Powered Developer Search
+                    </Typography>
+                    <Typography variant="body1">
+                      Use natural language to find the perfect developer:
+                      <br />
+                      <strong>"Find me a React developer"</strong>
+                      <br />
+                      <strong>"React and Python expert"</strong>
+                      <br />
+                      <strong>"Senior backend engineer"</strong>
+                    </Typography>
+                  </Paper>
+                )}
+            </>
+          )}
+        </Box>
+      </Container>
+
+      {/* Profile Modal */}
+      <Modal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        className="profile-modal"
+      >
+        <Box className="modal-content">
+          {selectedResource && (
+            <>
+              <Box className="modal-header">
+                <Stack direction="row" spacing={2} alignItems="center" flex={1}>
+                  <Avatar className="modal-avatar">
+                    {selectedResource.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" className="modal-name">
+                      {selectedResource.name}
+                    </Typography>
+                    <Typography variant="h6" className="modal-title">
+                      {selectedResource.title}
+                    </Typography>
+                    <Typography variant="body2" className="modal-dept">
+                      <Business fontSize="small" />{" "}
+                      {selectedResource.department}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <IconButton onClick={handleCloseModal} className="close-btn">
+                  <Close />
+                </IconButton>
+              </Box>
+
+              <Divider />
+
+              <Box className="modal-body">
+                {/* Match Score */}
+                {selectedResource.match_score && (
+                  <Box className="modal-section">
+                    <Typography variant="h6" className="section-title">
+                      Match Score
+                    </Typography>
+                    <Box className="match-score-large">
+                      <Typography variant="h2" className="score-value">
+                        {Math.round(selectedResource.match_score * 100)}%
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Compatibility Match
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+
+                {/* Status Information */}
+                <Box className="modal-section">
+                  <Typography variant="h6" className="section-title">
+                    Current Status
+                  </Typography>
+                  <List>
+                    <ListItem>
+                      <ListItemIcon>
+                        {selectedResource.availability === "available" ? (
+                          <CheckCircle color="success" />
+                        ) : (
+                          <Cancel color="error" />
+                        )}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Availability"
+                        secondary={selectedResource.availability}
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <Work color="primary" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Current Workload"
+                        secondary={
+                          <Box className="modal-workload-container">
+                            <LinearProgress
+                              variant="determinate"
+                              value={selectedResource.current_workload}
+                              color={getWorkloadColor(
+                                selectedResource.current_workload
+                              )}
+                              className="modal-workload-bar"
+                            />
+                            <Typography variant="body2">
+                              {selectedResource.current_workload}%
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <CalendarToday color="primary" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Experience"
+                        secondary={`${selectedResource.experience_years} years`}
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <EmojiEvents color="warning" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Projects Completed"
+                        secondary={selectedResource.projects_completed}
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <Business color="primary" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Department"
+                        secondary={selectedResource.department}
+                      />
+                    </ListItem>
+                  </List>
+                </Box>
+
+                {/* All Skills */}
+                <Box className="modal-section">
+                  <Typography variant="h6" className="section-title">
+                    All Skills ({selectedResource.skills.length})
+                  </Typography>
+                  <Stack
+                    direction="row"
+                    flexWrap="wrap"
+                    gap={1}
+                    className="skills-grid"
+                  >
+                    {selectedResource.skills.map((skill, index) => (
+                      <Chip
+                        key={index}
+                        label={skill}
+                        color="primary"
+                        variant="outlined"
+                        className="skill-chip-modal"
+                      />
+                    ))}
+                  </Stack>
+                </Box>
+
+                {/* AI Recommendation Reasons */}
+                {selectedResource.recommendation_reason && (
+                  <Box className="modal-section">
+                    <Typography variant="h6" className="section-title">
+                      Why Recommended
+                    </Typography>
+                    <List>
+                      {selectedResource.recommendation_reason
+                        .split("•")
+                        .filter((r) => r.trim())
+                        .map((reason, idx) => (
+                          <ListItem key={idx}>
+                            <ListItemIcon>
+                              <CheckCircle color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary={reason.trim()} />
+                          </ListItem>
+                        ))}
+                    </List>
+                  </Box>
+                )}
+              </Box>
+
+              <Divider />
+
+              <Box className="modal-footer">
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={handleCloseModal}
+                >
+                  Close
+                </Button>
+                <Box className="modal-footer-spacer" />
+                <Box className="modal-footer-actions">
+                  <TextField
+                    type="number"
+                    size="small"
+                    label="Add workload (hours)"
+                    value={assignHours}
+                    onChange={(e) => setAssignHours(e.target.value)}
+                    inputProps={{ min: 1 }}
+                  />
+                  <Button
+                    variant="contained"
+                    size="large"
+                    disabled={assignLoading}
+                    onClick={handleAssignWorkload}
+                  >
+                    {assignLoading ? "Assigning..." : "Assign Work"}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    startIcon={<Message />}
+                    onClick={() => {
+                      handleMessage(selectedResource);
+                      handleCloseModal();
+                    }}
+                  >
+                    Send Message
+                  </Button>
+                </Box>
+              </Box>
+            </>
+          )}
+        </Box>
+      </Modal>
     </>
   );
 }

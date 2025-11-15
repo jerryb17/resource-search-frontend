@@ -299,6 +299,21 @@
       .recommendation-alert {
         margin-top: $spacing-md;
         border-radius: $radius-md;
+
+        .recommendation-list {
+          margin-top: $spacing-sm;
+        }
+
+        .recommendation-list-item {
+          padding-top: $spacing-xs;
+          padding-bottom: $spacing-xs;
+          padding-left: 0;
+          padding-right: 0;
+        }
+
+        .recommendation-list-icon {
+          min-width: 32px;
+        }
       }
 
       .card-actions {
@@ -378,7 +393,6 @@
       padding: $spacing-2xl;
       background: $gradient-primary;
       color: $text-white;
-      border-radius: $radius-xl $radius-xl 0 0;
 
       .modal-avatar {
         width: 80px;
@@ -463,6 +477,19 @@
             }
           }
         }
+
+        .modal-workload-container {
+          display: flex;
+          align-items: center;
+          gap: $spacing-sm;
+          margin-top: $spacing-xs;
+
+          .modal-workload-bar {
+            flex: 1;
+            height: 8px;
+            border-radius: $radius-full;
+          }
+        }
       }
     }
 
@@ -476,6 +503,22 @@
 
       button {
         min-width: 150px;
+      }
+
+      .modal-footer-spacer {
+        flex: 1;
+      }
+
+      .modal-footer-actions {
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+
+        .MuiTextField-root {
+          min-width: 220px;
+        }
       }
     }
 

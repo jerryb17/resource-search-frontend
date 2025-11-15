@@ -144,6 +144,20 @@ class ApiService {
     return this.fetchApi(`/resources/${id}`);
   }
 
+  async updateResourceWorkload(
+    resourceId: number,
+    addedHours: number
+  ): Promise<{
+    success: boolean;
+    resource: Resource;
+    message: string;
+  }> {
+    return this.fetchApi(`/resources/${resourceId}/workload`, {
+      method: "POST",
+      body: JSON.stringify({ added_hours: addedHours }),
+    });
+  }
+
   async getAllTasks(filters?: {
     status?: string;
     priority?: string;
