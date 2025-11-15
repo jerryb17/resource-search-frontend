@@ -1,4 +1,4 @@
-@use '../styles/mixins' as *;
+@use "../styles/mixins" as *;
 
 .dashboard-container {
   padding: $spacing-2xl $spacing-md;
@@ -12,7 +12,7 @@
   }
 
   .dashboard-title {
-    color: $white;
+    color: #ffffff;
     margin-bottom: $spacing-2xl;
     text-align: center;
   }
@@ -23,7 +23,7 @@
 
   .stat-card {
     @include card;
-    
+
     .stat-content {
       @include flex-between;
       align-items: center;
@@ -33,22 +33,22 @@
         height: 56px;
         border-radius: $radius-md;
         @include flex-center;
-        
+
         &.primary {
           background: $gradient-primary;
           color: $text-white;
         }
-        
+
         &.success {
           background: $gradient-success;
           color: $text-white;
         }
-        
+
         &.warning {
           background: $gradient-warning;
           color: $text-white;
         }
-        
+
         &.secondary {
           background: $gradient-secondary;
           color: $text-white;
@@ -59,15 +59,15 @@
         font-size: 2rem;
         font-weight: 700;
         color: $primary;
-        
+
         &.success {
           color: $success;
         }
-        
+
         &.warning {
           color: $warning;
         }
-        
+
         &.secondary {
           color: $secondary;
         }
