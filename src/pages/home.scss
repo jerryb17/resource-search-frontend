@@ -355,6 +355,21 @@
       strong {
         color: $primary;
       }
+
+      .sample-queries {
+        margin-top: $spacing-md;
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-xs;
+
+        .sample-query-button {
+          padding: 0;
+          min-width: 0;
+          text-transform: none;
+          font-weight: 600;
+          color: $primary;
+        }
+      }
     }
   }
 }
@@ -552,6 +567,19 @@
 
             .score-value {
               font-size: 3rem;
+            }
+          }
+
+          .assign-work-section {
+            margin-top: $spacing-lg;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: $spacing-md;
+            flex-wrap: wrap;
+
+            .assign-work-text {
+              max-width: 60%;
             }
           }
         }

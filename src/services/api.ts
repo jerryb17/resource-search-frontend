@@ -158,6 +158,29 @@ class ApiService {
     });
   }
 
+  async createAndAssignTask(
+    resourceId: number,
+    payload: {
+      title: string;
+      description: string;
+      estimated_hours: number;
+      priority?: string;
+      deadline?: string;
+      department?: string;
+      complexity?: string;
+    }
+  ): Promise<{
+    success: boolean;
+    task: Task;
+    resource: Resource;
+    message: string;
+  }> {
+    return this.fetchApi(`/resources/${resourceId}/assign-task`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
   async getAllTasks(filters?: {
     status?: string;
     priority?: string;

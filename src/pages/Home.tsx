@@ -43,6 +43,7 @@ import {
 import type { Resource, Task } from "../services/api";
 import { apiService } from "../services/api";
 import { createVoiceRecognition } from "../services/voiceRecognition";
+import { AssignTaskModal } from "../components/AssignTaskModal";
 import "./home.scss";
 
 export function Home() {
@@ -56,10 +57,13 @@ export function Home() {
     null
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [assignHours, setAssignHours] = useState<string>("");
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [assignTitle, setAssignTitle] = useState("");
+  const [assignDescription, setAssignDescription] = useState("");
+  const [assignEstimatedHours, setAssignEstimatedHours] = useState("");
+  const [assignPriority, setAssignPriority] = useState("medium");
   const [assignLoading, setAssignLoading] = useState(false);
-  const [, setAssignError] = useState<string | null>(null);
-  const [, setAssignSuccess] = useState<string | null>(null);
+  const [assignError, setAssignError] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
 
   const initVoiceRecognition = useCallback(() => {
@@ -187,47 +191,79 @@ export function Home() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedResource(null);
-    setAssignHours("");
-    setAssignError(null);
-    setAssignSuccess(null);
-    setAssignLoading(false);
   };
 
-  const handleAssignWorkload = async () => {
-    if (!selectedResource) return;
-    const hours = parseFloat(assignHours);
+  const handleOpenAssignModal = () => {
+    setAssignTitle("");
+    setAssignDescription("");
+    setAssignEstimatedHours("");
+    setAssignPriority("medium");
+    setAssignError(null);
+    setIsAssignModalOpen(true);
+  };
 
+  const handleCloseAssignModal = () => {
+    setIsAssignModalOpen(false);
+    setAssignLoading(false);
+    setAssignError(null);
+  };
+
+  const handleAssignTask = async () => {
+    if (!selectedResource) return;
+
+    const hours = parseFloat(assignEstimatedHours);
+    if (!assignTitle.trim() || !assignDescription.trim()) {
+      setAssignError("Title and description are required");
+      return;
+    }
     if (isNaN(hours) || hours <= 0) {
-      setAssignError("Please enter a valid number of hours greater than 0");
-      setAssignSuccess(null);
+      setAssignError("Please enter a valid estimated hours greater than 0");
       return;
     }
 
     try {
       setAssignLoading(true);
       setAssignError(null);
-      const response = await apiService.updateResourceWorkload(
+
+      const response = await apiService.createAndAssignTask(
         selectedResource.id,
-        hours
+        {
+          title: assignTitle.trim(),
+          description: assignDescription.trim(),
+          estimated_hours: hours,
+          priority: assignPriority,
+        }
       );
+
+      const updatedResource = response.resource;
 
       // Update selected resource and any cards using it
-      setSelectedResource(response.resource);
+      setSelectedResource(updatedResource);
       setExactMatches((prev) =>
-        prev.map((r) => (r.id === response.resource.id ? response.resource : r))
+        prev.map((r) => (r.id === updatedResource.id ? updatedResource : r))
       );
       setRecommendations((prev) =>
-        prev.map((r) => (r.id === response.resource.id ? response.resource : r))
+        prev.map((r) => (r.id === updatedResource.id ? updatedResource : r))
       );
 
-      setAssignSuccess(response.message || "Workload updated successfully");
+      setIsAssignModalOpen(false);
     } catch (err) {
-      console.error("Assign workload error:", err);
-      setAssignError("Failed to update workload. Please try again.");
-      setAssignSuccess(null);
+      console.error("Assign task error:", err);
+      setAssignError("Failed to assign task. Please try again.");
     } finally {
       setAssignLoading(false);
     }
+  };
+
+  const sampleQueries = [
+    "Find me a React developer",
+    "React and Python expert",
+    "Senior backend engineer",
+  ];
+
+  const handleSampleQueryClick = (query: string) => {
+    setSearchQuery(query);
+    handleSearch(query);
   };
 
   // Helper function to render resource card
@@ -569,11 +605,19 @@ export function Home() {
                     <Typography variant="h5">No Developers Found</Typography>
                     <Typography variant="body1">
                       Try searching with different skills or criteria:
-                      <br />
-                      <strong>"React developer"</strong>,{" "}
-                      <strong>"Python and Django expert"</strong>, or{" "}
-                      <strong>"senior backend engineer"</strong>
                     </Typography>
+                    <Box className="sample-queries">
+                      {sampleQueries.map((query) => (
+                        <Button
+                          key={query}
+                          variant="text"
+                          className="sample-query-button"
+                          onClick={() => handleSampleQueryClick(query)}
+                        >
+                          {`"${query}"`}
+                        </Button>
+                      ))}
+                    </Box>
                   </Paper>
                 )}
 
@@ -588,13 +632,19 @@ export function Home() {
                     </Typography>
                     <Typography variant="body1">
                       Use natural language to find the perfect developer:
-                      <br />
-                      <strong>"Find me a React developer"</strong>
-                      <br />
-                      <strong>"React and Python expert"</strong>
-                      <br />
-                      <strong>"Senior backend engineer"</strong>
                     </Typography>
+                    <Box className="sample-queries">
+                      {sampleQueries.map((query) => (
+                        <Button
+                          key={query}
+                          variant="text"
+                          className="sample-query-button"
+                          onClick={() => handleSampleQueryClick(query)}
+                        >
+                          {`"${query}"`}
+                        </Button>
+                      ))}
+                    </Box>
                   </Paper>
                 )}
             </>
@@ -728,6 +778,25 @@ export function Home() {
                       />
                     </ListItem>
                   </List>
+                  <Box className="assign-work-section">
+                    <Box className="assign-work-text">
+                      <Typography variant="subtitle1">
+                        Assign work to this resource
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Create a task with title, description and estimated
+                        hours. Their workload and the dashboard will update
+                        automatically.
+                      </Typography>
+                    </Box>
+                    <Button
+                      variant="contained"
+                      size="medium"
+                      onClick={handleOpenAssignModal}
+                    >
+                      Assign Work
+                    </Button>
+                  </Box>
                 </Box>
 
                 {/* All Skills */}
@@ -786,41 +855,41 @@ export function Home() {
                 >
                   Close
                 </Button>
-                <Box className="modal-footer-spacer" />
-                <Box className="modal-footer-actions">
-                  <TextField
-                    type="number"
-                    size="small"
-                    label="Add workload (hours)"
-                    value={assignHours}
-                    onChange={(e) => setAssignHours(e.target.value)}
-                    inputProps={{ min: 1 }}
-                  />
-                  <Button
-                    variant="contained"
-                    size="large"
-                    disabled={assignLoading}
-                    onClick={handleAssignWorkload}
-                  >
-                    {assignLoading ? "Assigning..." : "Assign Work"}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    startIcon={<Message />}
-                    onClick={() => {
-                      handleMessage(selectedResource);
-                      handleCloseModal();
-                    }}
-                  >
-                    Send Message
-                  </Button>
-                </Box>
+                <Button
+                  variant="contained"
+                  size="large"
+                  startIcon={<Message />}
+                  onClick={() => {
+                    handleMessage(selectedResource);
+                    handleCloseModal();
+                  }}
+                >
+                  Send Message
+                </Button>
               </Box>
             </>
           )}
         </Box>
       </Modal>
+
+      {/* Assign Task Modal */}
+      {selectedResource && (
+        <AssignTaskModal
+          open={isAssignModalOpen}
+          onClose={handleCloseAssignModal}
+          onSubmit={handleAssignTask}
+          loading={assignLoading}
+          error={assignError}
+          title={assignTitle}
+          setTitle={setAssignTitle}
+          description={assignDescription}
+          setDescription={setAssignDescription}
+          estimatedHours={assignEstimatedHours}
+          setEstimatedHours={setAssignEstimatedHours}
+          priority={assignPriority}
+          setPriority={setAssignPriority}
+        />
+      )}
     </>
   );
 }
