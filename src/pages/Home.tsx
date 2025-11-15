@@ -385,7 +385,7 @@ export function Home() {
               className="recommendation-alert"
             >
               <Typography variant="caption" fontWeight={600}>
-                AI RECOMMENDATION
+                Resources with similar skills
               </Typography>
               <List dense disablePadding className="recommendation-list">
                 {resource.recommendation_reason
