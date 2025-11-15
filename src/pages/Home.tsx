@@ -665,7 +665,8 @@ export function Home() {
                   <List>
                     <ListItem>
                       <ListItemIcon>
-                        {selectedResource.availability === "available" ? (
+                        {selectedResource.availability.toLowerCase() ===
+                        "available" ? (
                           <CheckCircle color="success" />
                         ) : (
                           <Cancel color="error" />

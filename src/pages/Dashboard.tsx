@@ -263,7 +263,7 @@ export function Dashboard() {
                   dataKey="value"
                 >
                   {expertiseData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell index-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
