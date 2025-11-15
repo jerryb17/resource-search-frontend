@@ -197,7 +197,6 @@ class ApiService {
     task: string;
     count: number;
     recommendations: Resource[];
-
     task_analysis?: any;
     analysis_summary?: string;
     ai_powered?: boolean;

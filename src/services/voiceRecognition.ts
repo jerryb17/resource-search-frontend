@@ -34,13 +34,13 @@ export const createVoiceRecognition = (
   }
 
   const recognition = new SpeechRecognition();
-  
+
   // Enhanced configuration for better continuous speech recognition
-  recognition.continuous = true;  // Keep listening
-  recognition.interimResults = true;  // Get results while speaking
+  recognition.continuous = true; // Keep listening
+  recognition.interimResults = true; // Get results while speaking
   recognition.lang = "en-US";
 
-  let finalTranscript = '';
+  let finalTranscript = "";
   let silenceTimer: NodeJS.Timeout | null = null;
   let isManualStop = false;
 
@@ -56,7 +56,7 @@ export const createVoiceRecognition = (
   const startSilenceTimer = () => {
     clearSilenceTimer();
     silenceTimer = setTimeout(() => {
-      console.log('3 seconds of silence detected, finalizing...');
+      console.log("3 seconds of silence detected, finalizing...");
       if (finalTranscript.trim()) {
         onResult({
           transcript: finalTranscript.trim(),
@@ -65,12 +65,12 @@ export const createVoiceRecognition = (
         });
       }
       recognition.stop();
-    }, 3000); // 3 second delay
+    }, 1000);
   };
 
   recognition.onstart = () => {
-    console.log('Voice recognition started');
-    finalTranscript = '';
+    console.log("Voice recognition started");
+    finalTranscript = "";
     isManualStop = false;
     clearSilenceTimer();
   };
@@ -78,15 +78,15 @@ export const createVoiceRecognition = (
   recognition.onresult = (event: any) => {
     clearSilenceTimer(); // Reset timer on new speech
 
-    let interimTranscript = '';
-    
+    let interimTranscript = "";
+
     // Process all results
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const transcript = event.results[i][0].transcript;
-      
+
       if (event.results[i].isFinal) {
-        finalTranscript += transcript + ' ';
-        console.log('Final transcript segment:', transcript);
+        finalTranscript += transcript + " ";
+        console.log("Final transcript segment:", transcript);
       } else {
         interimTranscript += transcript;
       }
@@ -97,7 +97,8 @@ export const createVoiceRecognition = (
     if (currentTranscript) {
       onResult({
         transcript: currentTranscript,
-        confidence: event.results[event.results.length - 1][0].confidence || 0.5,
+        confidence:
+          event.results[event.results.length - 1][0].confidence || 0.5,
         isFinal: false,
       });
     }
@@ -109,9 +110,9 @@ export const createVoiceRecognition = (
   recognition.onerror = (event: any) => {
     clearSilenceTimer();
     console.error("Speech recognition error:", event.error);
-    
+
     // Don't report "no-speech" as an error if we already have transcript
-    if (event.error === 'no-speech' && finalTranscript.trim()) {
+    if (event.error === "no-speech" && finalTranscript.trim()) {
       onResult({
         transcript: finalTranscript.trim(),
         confidence: 1.0,
@@ -119,28 +120,31 @@ export const createVoiceRecognition = (
       });
       return;
     }
-    
+
     // Ignore aborted error on manual stop
-    if (event.error === 'aborted' && isManualStop) {
+    if (event.error === "aborted" && isManualStop) {
       return;
     }
-    
+
     if (onError) {
       const errorMessages: { [key: string]: string } = {
-        'no-speech': 'No speech detected. Please try again.',
-        'audio-capture': 'Microphone not found. Please check your device.',
-        'not-allowed': 'Microphone access denied. Please allow microphone access.',
-        'network': 'Network error. Please check your connection.',
+        "no-speech": "No speech detected. Please try again.",
+        "audio-capture": "Microphone not found. Please check your device.",
+        "not-allowed":
+          "Microphone access denied. Please allow microphone access.",
+        network: "Network error. Please check your connection.",
       };
-      
-      onError(errorMessages[event.error] || `Speech recognition error: ${event.error}`);
+
+      onError(
+        errorMessages[event.error] || `Speech recognition error: ${event.error}`
+      );
     }
   };
 
   recognition.onend = () => {
     clearSilenceTimer();
-    console.log('Voice recognition ended');
-    
+    console.log("Voice recognition ended");
+
     // If there's accumulated transcript and it wasn't a manual stop, send final result
     if (finalTranscript.trim() && !isManualStop) {
       onResult({
