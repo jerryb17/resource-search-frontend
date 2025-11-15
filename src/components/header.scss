@@ -1,0 +1,209 @@
+@use "../styles/mixins" as *;
+
+.app-header {
+  // Nested SCSS to override MUI AppBar background
+  &.MuiAppBar-root {
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(5, 54, 135, 0.1);
+  }
+
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: $spacing-lg 0;
+
+  .toolbar {
+    @include flex-between;
+    padding: 0;
+    gap: $spacing-xl;
+    align-items: center;
+    min-height: 64px;
+  }
+
+  .logo {
+    @include flex-center;
+    gap: $spacing-md;
+    flex-shrink: 0;
+    flex-direction: column;
+
+    .logo-image {
+      height: 48px;
+      width: auto;
+      object-fit: contain;
+      flex-shrink: 0;
+      display: block;
+    }
+
+    .logo-text-container {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-xs;
+    }
+
+    .title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: $primary;
+      margin: 0;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .tagline {
+      font-size: 1rem;
+      color: $text-secondary;
+      font-weight: 600;
+      line-height: 1;
+      white-space: nowrap;
+    }
+  }
+
+  .nav-buttons {
+    display: flex;
+    gap: $spacing-md;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .nav-btn {
+    // Nested SCSS to override MUI Button styles
+    &.MuiButton-root {
+      color: $text-secondary;
+      font-weight: 700;
+      padding: $spacing-md $spacing-xl;
+      border-radius: $radius-lg;
+      transition: all $transition-base;
+      white-space: nowrap;
+      min-width: 140px;
+      justify-content: center;
+      text-transform: none;
+      font-size: 1rem;
+
+      &:hover {
+        background: rgba($primary, 0.08);
+        color: $primary;
+        transform: translateY(-1px);
+      }
+
+      &:focus-visible {
+        outline: 3px solid $primary;
+        outline-offset: 2px;
+      }
+
+      &.active {
+        background: $primary;
+        color: $text-white;
+        box-shadow: $shadow-md;
+
+        &:hover {
+          background: $primary-dark;
+        }
+      }
+
+      .MuiButton-startIcon {
+        margin-right: $spacing-sm;
+      }
+    }
+  }
+
+  // Tablet (768px - 1024px)
+  @include responsive(lg) {
+    padding: $spacing-md 0;
+
+    .toolbar {
+      gap: $spacing-md;
+      min-height: 56px;
+    }
+
+    .logo {
+      gap: $spacing-sm;
+
+      .logo-image {
+        height: 40px;
+      }
+
+      .title {
+        font-size: 1.25rem;
+      }
+
+      .tagline {
+        font-size: 0.625rem;
+      }
+    }
+
+    .nav-btn {
+      &.MuiButton-root {
+        padding: $spacing-sm $spacing-md;
+        min-width: 120px;
+        font-size: 0.875rem;
+      }
+    }
+  }
+
+  // Mobile (max 768px)
+  @include responsive(md) {
+    padding: $spacing-sm 0;
+
+    .toolbar {
+      gap: $spacing-sm;
+      min-height: 48px;
+    }
+
+    .logo {
+      gap: $spacing-xs;
+
+      .logo-image {
+        height: 36px;
+      }
+
+      .title {
+        font-size: 1rem;
+      }
+
+      .tagline {
+        display: none;
+      }
+    }
+
+    .nav-buttons {
+      gap: $spacing-sm;
+    }
+
+    .nav-btn {
+      &.MuiButton-root {
+        padding: $spacing-xs $spacing-sm;
+        min-width: 44px;
+        font-size: 0;
+
+        span {
+          display: none;
+        }
+
+        .MuiButton-startIcon {
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  // Small Mobile (max 640px)
+  @include responsive(sm) {
+    .logo {
+      .logo-image {
+        height: 32px;
+      }
+
+      .title {
+        font-size: 0.875rem;
+      }
+    }
+
+    .nav-btn {
+      &.MuiButton-root {
+        padding: $spacing-xs;
+        min-width: 40px;
+      }
+    }
+  }
+}

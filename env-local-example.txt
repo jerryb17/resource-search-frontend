@@ -1,0 +1,12 @@
+# Frontend Environment Variables
+# Copy this file to .env.local ONLY if you need to override the default Render backend
+
+# Backend API Base URL
+# Default: https://resource-search-backend.onrender.com/api (Render backend)
+# Only set this if you need to use a different backend URL
+# VITE_API_BASE_URL=https://resource-search-backend.onrender.com/api
+
+# Note: All Vite environment variables must start with VITE_
+# After changing .env.local, restart the Vite dev server
+# This file (.env.local) is gitignored and should NOT be committed
+# If .env.local doesn't exist, the app will use the Render backend by default

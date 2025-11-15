@@ -1,0 +1,223 @@
+@use "./styles/mixins" as *;
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: $gradient-hero;
+  color: $text-primary;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+// Skip to main content (accessibility)
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: $primary;
+  color: $text-white;
+  padding: $spacing-sm $spacing-md;
+  z-index: 10000;
+  text-decoration: none;
+  border-radius: 0 0 $radius-md 0;
+
+  &:focus {
+    top: 0;
+    outline: 3px solid $secondary;
+    outline-offset: 2px;
+  }
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: $gradient-hero;
+}
+
+// Focus visible styles (accessibility)
+*:focus-visible {
+  outline: 3px solid $primary;
+  outline-offset: 2px;
+  border-radius: $radius-sm;
+}
+
+// Button focus styles
+button:focus-visible {
+  outline: 3px solid $primary;
+  outline-offset: 2px;
+}
+
+// Link focus styles
+a:focus-visible {
+  outline: 3px solid $primary;
+  outline-offset: 2px;
+  border-radius: $radius-sm;
+}
+
+// Cards
+.stat-card {
+  @include card;
+
+  .stat-icon {
+    background: $gradient-primary;
+  }
+}
+
+.resource-card {
+  @include card;
+}
+
+// Buttons
+.btn-primary {
+  @include button-primary;
+}
+
+.btn-secondary {
+  @include button-secondary;
+}
+
+// Voice button
+.voice-btn-listening {
+  animation: pulse-voice 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-voice {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba($danger, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba($danger, 0);
+  }
+}
+
+// Loading
+.loading-spinner {
+  @include spinner(60px, $primary);
+  margin: 0 auto;
+}
+
+// Scrollbar
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: $gradient-primary;
+  border-radius: 5px;
+
+  &:hover {
+    background: $primary-dark;
+  }
+}
+
+// Tablet Responsive (768px - 1024px)
+@include responsive(lg) {
+  html {
+    font-size: 15px;
+  }
+
+  .app-container {
+    padding: 0;
+  }
+}
+
+// Mobile Responsive (max 768px)
+@include responsive(md) {
+  html {
+    font-size: 14px;
+  }
+
+  body {
+    line-height: 1.5;
+  }
+
+  .app-container {
+    padding: 0;
+  }
+
+  // Increase touch targets for mobile
+  button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+// Small Mobile (max 640px)
+@include responsive(sm) {
+  html {
+    font-size: 13px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+// High contrast mode support (accessibility)
+@media (prefers-contrast: high) {
+  body {
+    background: $bg-primary;
+  }
+
+  .app-container {
+    background: $bg-primary;
+  }
+
+  button,
+  a {
+    border: 2px solid currentColor;
+  }
+}
+
+// Reduced motion support (accessibility)
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Print styles
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .app-header,
+  .nav-buttons,
+  button:not(.print-button) {
+    display: none;
+  }
+}
